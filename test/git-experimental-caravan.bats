@@ -32,11 +32,6 @@ teardown() {
   rm "$template_file_in_home"
 }
 
-@test "1 + 1 equals 2" {
-  result="$(echo 1 + 1 | bc)"
-  [ "$result" -eq 2 ]
-}
-
 @test "no arguments prints nothing when there are no trailers" {
   run git-experimental-caravan
   [ $status -eq 0 ]
