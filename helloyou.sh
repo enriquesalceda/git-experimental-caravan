@@ -12,8 +12,7 @@ card=""
 main() {
   if [[ $# -eq 0 ]]
   then
-    ensure_template_file
-    # echo "nothing to do"
+    current_trailers
     exit 0
   fi
 
@@ -21,6 +20,9 @@ main() {
       key="$1"
       
       case $key in
+          clean)
+            remove_trailers
+            ;;
           -a)
               shift # remove -a from the list of arguments
               # While there are arguments and the next one doesn't start with '-'
@@ -28,13 +30,11 @@ main() {
                   users+=("$1")
                   shift # remove the current user from the list of arguments
               done
-              show_users
               ;;
           -c)
               card="$2"
               shift # remove -c
               shift # remove its argument
-              show_card
               ;;
           *)
               echo "Invalid option: $1" >&2
@@ -42,19 +42,19 @@ main() {
               ;;
       esac
   done
+
+  update_trailers
 }
 
-# Print the results
-show_users() {
-  echo "Users are:"
-  for user in "${users[@]}"; do
-      echo "- $user"
-  done
+current_trailers() {
+  ensure_template_file
+  print_trailers
+  exit 0
 }
 
-show_card() {
-  echo ""
-  echo "Card: $card"
+print_trailers() {
+  sed -n "/$CO_AUTHOR_TRAILER_TOKEN/p" "$template_file"
+  sed -n "/$CARD_TRAILER_TOKEN/p" "$template_file"
 }
 
 ensure_template_file() {
@@ -81,6 +81,48 @@ must_have_config() {
   then
     abort "$error"
   fi
+}
+
+add_co_authors() {
+  for initials in "${users[@]}"
+  do
+    value=$(git config "co-authors.$initials")
+    git interpret-trailers --trailer "$CO_AUTHOR_TRAILER_TOKEN: $value" --in-place "$template_file"
+  done
+}
+
+add_card() {
+  git interpret-trailers --trailer "$CARD_TRAILER_TOKEN: $card" --in-place "$template_file"
+}
+
+update_trailers() {
+  ensure_template_file
+  remove_trailers
+
+  if [[ $users ]]; then
+    add_co_authors
+  fi
+
+  if [[ $card ]]; then
+    add_card
+  fi
+
+  print_trailers
+
+  exit 0
+}
+
+remove_trailers() {
+  ensure_template_file
+  remove_trailers
+  exit 0
+}
+
+remove_trailers() {
+  local temp_file
+  temp_file=$(mktemp)
+  sed -e "/$CARD_TRAILER_TOKEN/d" -e "/$CO_AUTHOR_TRAILER_TOKEN/d" "$template_file" > "$temp_file"
+  mv "$temp_file" "$template_file"
 }
 
 main "$@"
