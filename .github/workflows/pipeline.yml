@@ -1,0 +1,19 @@
+name: git-experimental-caravan-git
+run-name: ${{ github.actor }}
+on: [push, pull_request]
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest<F7>
+    steps:
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.2.1
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Test
+        run: bats test/git-experimental-caravan.bats
+
