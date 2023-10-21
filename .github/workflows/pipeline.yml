@@ -14,6 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v1
 
-      - name: Test
+      - name: Test the caravan 🚍
         run: bats test/git-experimental-caravan.bats
 
