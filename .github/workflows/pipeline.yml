@@ -1,10 +1,10 @@
-name: git-experimental-caravan-git
+name: "CI" 
 run-name: ${{ github.actor }}
 on: [push, pull_request]
 jobs:
   build:
     name: build
-    runs-on: ubuntu-latest<F7>
+    runs-on: ubuntu-latest
     steps:
       - name: Setup BATS
         uses: mig4/setup-bats@v1
